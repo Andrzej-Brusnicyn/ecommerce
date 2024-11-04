@@ -8,12 +8,20 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Repositories\ProductRepositoryInterface;
 
 class ProductsController extends Controller
 {
+    protected $productRepository;
+
+    public function __construct(ProductRepositoryInterface $productRepository)
+    {
+        $this->productRepository = $productRepository;
+    }
+
     public function index(ProductFilter $filter)
     {
-        $products = Product::filter($filter)->get();
+        $products = $this->productRepository->getAllWithFilter($filter);
         $categories = Category::all();
 
         return view('index', compact('products', 'categories'));
@@ -21,7 +29,7 @@ class ProductsController extends Controller
 
     public function show($product_id)
     {
-        $product = Product::with('categories')->find($product_id);
+        $product = $this->productRepository->findById($product_id);
         $category = $product->categories->first();
         return view('product', compact('product', 'category'));
     }
@@ -29,9 +37,7 @@ class ProductsController extends Controller
     public function store(StoreProductRequest $request)
     {
         $validated = $request->validated();
-
-        $product = Product::create($validated);
-        $product->categories()->attach($request->category_id);
+        $product = $this->productRepository->create($validated);
 
         return response()->json([
             'message' => 'Product created successfully',
@@ -42,10 +48,7 @@ class ProductsController extends Controller
     public function update(UpdateProductRequest $request, $product_id)
     {
         $validated = $request->validated();
-
-        $product = Product::find($product_id);
-        $product->update($validated);
-        $product->categories()->sync([$request->category_id]);
+        $product = $this->productRepository->update($product_id, $validated);
 
         return response()->json([
             'message' => 'Product updated successfully',
@@ -55,9 +58,7 @@ class ProductsController extends Controller
 
     public function destroy($product_id)
     {
-        $product = Product::find($product_id);
-        $product->categories()->detach();
-        $product->delete();
+        $this->productRepository->delete($product_id);
 
         return response()->json([
             'message' => 'Product deleted successfully'

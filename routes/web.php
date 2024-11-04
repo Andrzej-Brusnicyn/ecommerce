@@ -14,9 +14,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 
 Route::prefix('products')->group(function () {
     Route::get('/', [ProductsController::class, 'index']);
-    Route::get('/{product}', [ProductsController::class, 'show'])->name('products.show');
-    Route::post('/', [ProductsController::class, 'store'])->name('products.store')->middleware(['auth:sanctum', 'role:admin']);
-    Route::put('/{product}', [ProductsController::class, 'update'])->name('products.update')->middleware(['auth:sanctum', 'role:admin']);
-    Route::delete('/{product}', [ProductsController::class, 'destroy'])->name('products.destroy')->middleware(['auth:sanctum', 'role:admin']);
+    Route::get('/{product}', [ProductsController::class, 'show']);
+    Route::post('/', [ProductsController::class, 'store'])->middleware(['auth:sanctum', 'role:admin']);
+    Route::put('/{product}', [ProductsController::class, 'update'])->middleware(['auth:sanctum', 'role:admin']);
+    Route::delete('/{product}', [ProductsController::class, 'destroy'])->middleware(['auth:sanctum', 'role:admin']);
 });
 
