@@ -70,5 +70,9 @@
         </div>
     @endforeach
 </div>
+
+<div class="pagination">
+    {{ $products->links() }}
+</div>
 </body>
 </html>

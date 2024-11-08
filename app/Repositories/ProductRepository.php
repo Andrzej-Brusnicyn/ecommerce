@@ -8,7 +8,7 @@ class ProductRepository implements ProductRepositoryInterface
 {
     public function getAllWithFilter($filter)
     {
-        return Product::filter($filter)->get();
+        return Product::filter($filter)->paginate(5);
     }
 
     public function findById($product_id)
