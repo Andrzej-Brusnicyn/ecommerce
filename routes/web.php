@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductsController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\OrderController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -29,3 +30,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/cart/items/{cartItem}', [CartController::class, 'updateQuantity'])->name('cart.update');
     Route::delete('/cart/items/{cartItem}', [CartController::class, 'removeItem'])->name('cart.remove');
 });
+
+Route::post('/order', [OrderController::class, 'createOrder'])->name('order')->middleware('auth:sanctum');

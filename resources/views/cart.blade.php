@@ -26,6 +26,10 @@
                 return $item->product->price * $item->quantity;
             }) }} руб.
             </div>
+            <form action="{{ route('order') }}" method="POST">
+                @csrf
+                <button type="submit" class="btn btn-primary">Купить</button>
+            </form>
         @else
             <p>Cart is empty</p>
         @endif
