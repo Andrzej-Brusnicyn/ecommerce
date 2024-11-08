@@ -21,7 +21,7 @@ class ProductsController extends Controller
 
     public function index(ProductFilter $filter)
     {
-        $products = $this->productRepository->getAllWithFilter($filter);
+        $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());;
         $categories = Category::all();
 
         return view('index', compact('products', 'categories'));

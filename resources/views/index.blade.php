@@ -72,7 +72,7 @@
 </div>
 
 <div class="pagination">
-    {{ $products->links() }}
+    {{ $products->appends(request()->all())->links() }}
 </div>
 </body>
 </html>
