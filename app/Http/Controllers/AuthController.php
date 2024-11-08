@@ -24,10 +24,7 @@ class AuthController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
+        return redirect()->route('login')->with('message', 'Вы успешно зарегистрировались!');
     }
 
     /**
@@ -49,11 +46,7 @@ class AuthController extends Controller
         $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'User logged in successfully',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
+        return redirect()->route('catalog')->with('message', 'Вы успешно вошли в систему!');
     }
 
     /**
@@ -63,8 +56,19 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
 
-        return response()->json([
-            'message' => 'User logged out successfully'
-        ]);
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('catalog')->with('message', 'Вы успешно вышли из системы!');
+    }
+
+    public function showRegistrationForm()
+    {
+        return view('register');
+    }
+
+    public function showLoginForm()
+    {
+        return view('login');
     }
 }

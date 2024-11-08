@@ -6,6 +6,18 @@
     <title>Catalog</title>
 </head>
 <body>
+<div>
+    @auth
+        <span class="mr-4">Welcome, {{ Auth::user()->name }}</span>
+        <form method="POST" action="{{ route('logout') }}" class="inline">
+            @csrf
+            <button type="submit" class="text-red-500 hover:underline">Logout</button>
+        </form>
+    @else
+        <a href="{{ route('login') }}" class="text-blue-500 hover:underline mr-4">Login</a>
+        <a href="{{ route('register') }}" class="text-blue-500 hover:underline">Register</a>
+    @endauth
+</div>
 <form method="GET" class="filters">
     <select name="category_id">
         <option value="">All Categories</option>

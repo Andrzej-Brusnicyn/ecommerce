@@ -61,3 +61,5 @@ class ProductFilter
         $this->builder->orderBy($sortField, $sortDirection);
     }
 }
+
+### https://laravel.su/p/pattern-filtr-v-laravel

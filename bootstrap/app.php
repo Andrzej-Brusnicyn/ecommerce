@@ -17,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'http://localhost/register',
             'http://localhost/login',
             'http://localhost/logout',
+            'http://localhost/cart/*',
             'http://localhost/products',
             'http://localhost/products/*',
         ]);
