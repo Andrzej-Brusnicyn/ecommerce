@@ -18,8 +18,21 @@
 <form action="{{ route('cart.add') }}" method="POST">
     @csrf
     <input type="hidden" name="product_id" value="{{ $product->id }}">
+    <label for="quantity">Количество:</label>
     <input type="number" name="quantity" value="1" min="1">
-    <button type="submit">Add to cart</button>
+
+    <div>
+        <p>Выберите дополнительные услуги:</p>
+        @foreach($services as $service)
+            <label>
+                <input type="checkbox" name="services[]" value="{{ $service->id }}">
+                {{ $service->name }} (+{{ $service->price }} BYN)
+            </label>
+            <br>
+        @endforeach
+    </div>
+
+    <button type="submit">Добавить в корзину</button>
 </form>
 </body>
 </html>

@@ -6,6 +6,7 @@ use App\Filters\ProductFilter;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Service;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Repositories\ProductRepositoryInterface;
@@ -21,7 +22,7 @@ class ProductsController extends Controller
 
     public function index(ProductFilter $filter)
     {
-        $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());;
+        $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());
         $categories = Category::all();
 
         return view('index', compact('products', 'categories'));
@@ -31,13 +32,14 @@ class ProductsController extends Controller
     {
         $product = $this->productRepository->findById($product_id);
         $category = $product->categories->first();
-        return view('product', compact('product', 'category'));
+        $services = Service::all();
+
+        return view('product', compact('product', 'category', 'services'));
     }
 
     public function store(StoreProductRequest $request)
     {
-        $validated = $request->validated();
-        $product = $this->productRepository->create($validated);
+        $product = $this->productRepository->create($request->validated());
 
         return response()->json([
             'message' => 'Product created successfully',
@@ -47,8 +49,7 @@ class ProductsController extends Controller
 
     public function update(UpdateProductRequest $request, $product_id)
     {
-        $validated = $request->validated();
-        $product = $this->productRepository->update($product_id, $validated);
+        $product = $this->productRepository->update($product_id, $request->validated());
 
         return response()->json([
             'message' => 'Product updated successfully',

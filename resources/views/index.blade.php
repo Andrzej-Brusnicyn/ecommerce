@@ -71,7 +71,7 @@
     @endforeach
 </div>
 
-<div class="pagination">
+<div>
     {{ $products->appends(request()->all())->links() }}
 </div>
 </body>
