@@ -66,7 +66,10 @@
     @foreach($products as $product)
         <div class="product-card">
             <a href="/products/{{$product->id}}"><h3>{{ $product->name }}</h3></a>
-            <p>Price: {{ $product->price }} BYN</p>
+            <p>{{ $product->price }} BYN</p>
+            <p>${{ $product->price_usd }}</p>
+            <p>€{{ $product->price_eur }}</p>
+            <p>₽{{ $product->price_rub }}</p>
         </div>
     @endforeach
 </div>

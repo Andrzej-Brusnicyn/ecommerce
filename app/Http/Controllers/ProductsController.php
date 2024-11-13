@@ -10,20 +10,39 @@ use App\Models\Service;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Repositories\ProductRepositoryInterface;
+use App\Services\CurrencyService;
+use App\Services\ServiceService;
+use App\Services\CategoryService;
 
 class ProductsController extends Controller
 {
     protected $productRepository;
+    protected $categoryService;
+    protected $serviceService;
 
-    public function __construct(ProductRepositoryInterface $productRepository)
+    public function __construct(
+        ProductRepositoryInterface $productRepository,
+        CategoryService $categoryService,
+        ServiceService $serviceService
+    )
     {
         $this->productRepository = $productRepository;
+        $this->categoryService = $categoryService;
+        $this->serviceService = $serviceService;
     }
 
     public function index(ProductFilter $filter)
     {
         $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());
-        $categories = Category::all();
+        $categories = $this->categoryService->getAll();
+
+        $currencyService = new CurrencyService();
+
+        foreach ($products as $product) {
+            $product->price_usd = $currencyService->convert($product->price, 'USD');
+            $product->price_eur = $currencyService->convert($product->price, 'EUR');
+            $product->price_rub = $currencyService->convert($product->price, 'RUB');
+        }
 
         return view('index', compact('products', 'categories'));
     }
@@ -32,7 +51,7 @@ class ProductsController extends Controller
     {
         $product = $this->productRepository->findById($product_id);
         $category = $product->categories->first();
-        $services = Service::all();
+        $services = $this->serviceService->getAll();
 
         return view('product', compact('product', 'category', 'services'));
     }
