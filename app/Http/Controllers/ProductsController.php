@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Filters\ProductFilter;
 use Illuminate\Http\Request;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\Service;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Repositories\ProductRepositoryInterface;
 use App\Services\CurrencyService;
 use App\Services\ServiceService;
 use App\Services\CategoryService;
+use App\DTO\CreateProductDTO;
 
 class ProductsController extends Controller
 {
@@ -58,8 +56,8 @@ class ProductsController extends Controller
 
     public function store(StoreProductRequest $request)
     {
-        $product = $this->productRepository->create($request->validated());
-
+        $dto = new CreateProductDTO($request->validated());
+        $product = $this->productRepository->create($dto->toArray());
         return response()->json([
             'message' => 'Product created successfully',
             'product' => $product
@@ -68,8 +66,8 @@ class ProductsController extends Controller
 
     public function update(UpdateProductRequest $request, $product_id)
     {
-        $product = $this->productRepository->update($product_id, $request->validated());
-
+        $dto = new CreateProductDTO($request->validated());
+        $product = $this->productRepository->update($product_id, $dto->toArray());
         return response()->json([
             'message' => 'Product updated successfully',
             'product' => $product
@@ -85,5 +83,3 @@ class ProductsController extends Controller
         ]);
     }
 }
-
-### https://medium.com/@soulaimaneyh/laravel-repository-pattern-da4e1e3efc01

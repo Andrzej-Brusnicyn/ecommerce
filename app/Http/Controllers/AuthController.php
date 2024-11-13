@@ -25,9 +25,9 @@ class AuthController extends Controller
 
     public function login(LoginRequest $request)
     {
-        $this->authService->login($request->only('email', 'password'));
+        $result = $this->authService->login($request->only('email', 'password'));
 
-        return redirect()->route('catalog')->with('message', 'Вы успешно вошли в систему!');
+        return response()->json($result, 200);
     }
 
     public function logout(Request $request)

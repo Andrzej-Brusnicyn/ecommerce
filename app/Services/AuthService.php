@@ -30,7 +30,12 @@ class AuthService
         }
 
         $user = Auth::user();
-        return $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return [
+            'token' => $token,
+            'user' => $user
+        ];
     }
 
     public function logout(Request $request)
