@@ -2,12 +2,12 @@
 
 namespace App\DTO;
 
-class CreateProductDTO
+readonly class CreateProductDTO
 {
-    public $name;
-    public $description;
-    public $price;
-    public $category_id;
+    public string $name;
+    public string $description;
+    public float $price;
+    public int $category_id;
 
     public function __construct(array $data)
     {
