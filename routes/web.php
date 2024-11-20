@@ -8,7 +8,6 @@ use App\Http\Controllers\OrderController;
 
 Route::get('/', fn() => view('welcome'))->name('home');
 
-// Маршруты авторизации
 Route::controller(AuthController::class)->group(function () {
     Route::get('/register', 'showRegistrationForm')->name('auth.register');
     Route::post('/register', 'register');
@@ -17,7 +16,6 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('/logout', 'logout')->name('auth.logout')->middleware('auth');
 });
 
-// Маршруты продуктов
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [ProductsController::class, 'index'])->name('index');
     Route::get('/{product}', [ProductsController::class, 'show'])->name('show');
@@ -28,7 +26,6 @@ Route::prefix('products')->name('products.')->group(function () {
     });
 });
 
-// Маршруты корзины
 Route::prefix('cart')->name('cart.')->middleware('auth')->group(function () {
     Route::get('/', [CartController::class, 'index'])->name('index');
     Route::post('/add', [CartController::class, 'addToCart'])->name('add');
@@ -36,7 +33,6 @@ Route::prefix('cart')->name('cart.')->middleware('auth')->group(function () {
     Route::delete('/items/{cartItem}', [CartController::class, 'removeItem'])->name('remove');
 });
 
-// Маршруты заказов
 Route::post('/order', [OrderController::class, 'createOrder'])
     ->name('order.create')
     ->middleware('auth');
