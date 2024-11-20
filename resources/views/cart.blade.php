@@ -1,45 +1,55 @@
-<h2>Cart</h2>
+<h2>Корзина</h2>
 
 @if($cart && $cart->items->count() > 0)
     @foreach($cart->items as $item)
         <div class="cart-item">
             <h3>{{ $item->product->name }}</h3>
-            <p>Price: {{ $item->product->price }} BYN</p>
+            <p>Цена: {{ $item->product->price }} BYN</p>
 
-            <form action="{{ route('cart.update', $item) }}" method="POST">
+            <form action="{{ route('cart.update', $item) }}" method="POST" style="display: inline;">
                 @csrf
                 @method('PATCH')
-                <input type="number" name="quantity" value="{{ $item->quantity }}" min="1">
-                <button type="submit">Reload</button>
+                <label>
+                    Количество:
+                    <input type="number" name="quantity" value="{{ $item->quantity }}" min="1">
+                </label>
+                <button type="submit">Обновить</button>
             </form>
 
-            <form action="{{ route('cart.remove', $item) }}" method="POST">
+            <form action="{{ route('cart.remove', $item) }}" method="POST" style="display: inline;">
                 @csrf
                 @method('DELETE')
-                <button type="submit">Delete</button>
+                <button type="submit">Удалить</button>
             </form>
+
+            @if($item->services->isNotEmpty())
+                <div class="cart-item-services">
+                    <h4>Услуги:</h4>
+                    <ul>
+                        @foreach($item->services as $service)
+                            <li>{{ $service->name }} (+{{ $service->price }} BYN)</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
+        <hr>
     @endforeach
 
-    <div class="cart-services">
-        <h3>Selected Services</h3>
-        @foreach($cart->services as $service)
-            <p>{{ $service->name }} (+{{ $service->price }} BYN)</p>
-        @endforeach
-    </div>
-
     <div class="cart-total">
-        <p>Итого:
+        <h3>Итого:</h3>
+        <p>
             {{ $cart->items->sum(function($item) {
-                return $item->product->price * $item->quantity;
-            }) + $cart->services->sum('price') }} руб.
+                return $item->product->price * $item->quantity
+                    + $item->services->sum('price');
+            }) }} BYN
         </p>
     </div>
 
-    <form action="{{ route('order') }}" method="POST">
+    <form action="{{ route('order.create') }}" method="POST">
         @csrf
-        <button type="submit" class="btn btn-primary">Купить</button>
+        <button type="submit" class="btn btn-primary">Оформить заказ</button>
     </form>
 @else
-    <p>Cart is empty</p>
+    <p>Ваша корзина пуста.</p>
 @endif

@@ -11,25 +11,39 @@ use App\Services\CurrencyService;
 use App\Services\ServiceService;
 use App\Services\CategoryService;
 use App\DTO\CreateProductDTO;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
 
 class ProductsController extends Controller
 {
-    protected $productRepository;
-    protected $categoryService;
-    protected $serviceService;
+    protected ProductRepositoryInterface $productRepository;
+    protected CategoryService $categoryService;
+    protected ServiceService $serviceService;
 
+    /**
+     * ProductsController constructor.
+     *
+     * @param ProductRepositoryInterface $productRepository
+     * @param CategoryService $categoryService
+     * @param ServiceService $serviceService
+     */
     public function __construct(
         ProductRepositoryInterface $productRepository,
         CategoryService $categoryService,
         ServiceService $serviceService
-    )
-    {
+    ) {
         $this->productRepository = $productRepository;
         $this->categoryService = $categoryService;
         $this->serviceService = $serviceService;
     }
 
-    public function index(ProductFilter $filter)
+    /**
+     * Display a listing of the products.
+     *
+     * @param ProductFilter $filter
+     * @return View
+     */
+    public function index(ProductFilter $filter): View
     {
         $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());
         $categories = $this->categoryService->getAll();
@@ -45,7 +59,13 @@ class ProductsController extends Controller
         return view('index', compact('products', 'categories'));
     }
 
-    public function show($product_id)
+    /**
+     * Display the specified product.
+     *
+     * @param int $product_id
+     * @return View
+     */
+    public function show(int $product_id): View
     {
         $product = $this->productRepository->findById($product_id);
         $category = $product->categories->first();
@@ -54,7 +74,13 @@ class ProductsController extends Controller
         return view('product', compact('product', 'category', 'services'));
     }
 
-    public function store(StoreProductRequest $request)
+    /**
+     * Store a newly created product in storage.
+     *
+     * @param StoreProductRequest $request
+     * @return JsonResponse
+     */
+    public function store(StoreProductRequest $request): JsonResponse
     {
         $dto = new CreateProductDTO($request->validated());
         $product = $this->productRepository->create($dto->toArray());
@@ -64,7 +90,14 @@ class ProductsController extends Controller
         ], 201);
     }
 
-    public function update(UpdateProductRequest $request, $product_id)
+    /**
+     * Update the specified product in storage.
+     *
+     * @param UpdateProductRequest $request
+     * @param int $product_id
+     * @return JsonResponse
+     */
+    public function update(UpdateProductRequest $request, int $product_id): JsonResponse
     {
         $dto = new CreateProductDTO($request->validated());
         $product = $this->productRepository->update($product_id, $dto->toArray());
@@ -74,7 +107,13 @@ class ProductsController extends Controller
         ]);
     }
 
-    public function destroy($product_id)
+    /**
+     * Remove the specified product from storage.
+     *
+     * @param int $product_id
+     * @return JsonResponse
+     */
+    public function destroy(int $product_id): JsonResponse
     {
         $this->productRepository->delete($product_id);
 

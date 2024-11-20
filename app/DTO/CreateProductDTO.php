@@ -9,6 +9,11 @@ readonly class CreateProductDTO
     public float $price;
     public int $category_id;
 
+    /**
+     * CreateProductDTO constructor.
+     *
+     * @param array $data
+     */
     public function __construct(array $data)
     {
         $this->name = $data['name'];
@@ -17,6 +22,11 @@ readonly class CreateProductDTO
         $this->category_id = $data['category_id'];
     }
 
+    /**
+     * Convert the DTO to an array.
+     *
+     * @return array
+     */
     public function toArray(): array
     {
         return [

@@ -7,15 +7,26 @@ use Illuminate\Http\Request;
 
 class ProductFilter
 {
-    protected $request;
-    protected $builder;
+    protected Request $request;
+    protected Builder $builder;
 
+    /**
+     * ProductFilter constructor.
+     *
+     * @param Request $request
+     */
     public function __construct(Request $request)
     {
         $this->request = $request;
     }
 
-    public function apply(Builder $builder)
+    /**
+     * Apply the filters to the builder.
+     *
+     * @param Builder $builder
+     * @return Builder
+     */
+    public function apply(Builder $builder): Builder
     {
         $this->builder = $builder;
 
@@ -36,24 +47,44 @@ class ProductFilter
         return $this->builder;
     }
 
-    protected function filterByCategory()
+    /**
+     * Filter by category.
+     *
+     * @return void
+     */
+    protected function filterByCategory(): void
     {
         $this->builder->whereHas('categories', function($query) {
             $query->where('categories.id', $this->request->category_id);
         });
     }
 
-    protected function filterByMinPrice()
+    /**
+     * Filter by minimum price.
+     *
+     * @return void
+     */
+    protected function filterByMinPrice(): void
     {
         $this->builder->where('price', '>=', $this->request->min_price);
     }
 
-    protected function filterByMaxPrice()
+    /**
+     * Filter by maximum price.
+     *
+     * @return void
+     */
+    protected function filterByMaxPrice(): void
     {
         $this->builder->where('price', '<=', $this->request->max_price);
     }
 
-    protected function applySorting()
+    /**
+     * Apply sorting.
+     *
+     * @return void
+     */
+    protected function applySorting(): void
     {
         $sortField = $this->request->get('sort_by', 'created_at');
         $sortDirection = $this->request->get('sort_direction', 'asc');
@@ -61,5 +92,3 @@ class ProductFilter
         $this->builder->orderBy($sortField, $sortDirection);
     }
 }
-
-### https://laravel.su/p/pattern-filtr-v-laravel

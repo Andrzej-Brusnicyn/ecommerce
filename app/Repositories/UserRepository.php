@@ -7,13 +7,25 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function create(array $data)
+    /**
+     * Create a new user.
+     *
+     * @param array $data
+     * @return User
+     */
+    public function create(array $data): User
     {
         $data['password'] = Hash::make($data['password']);
         return User::create($data);
     }
 
-    public function findByEmail(string $email)
+    /**
+     * Find a user by email.
+     *
+     * @param string $email
+     * @return User|null
+     */
+    public function findByEmail(string $email): ?User
     {
         return User::where('email', $email)->first();
     }

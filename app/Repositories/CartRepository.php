@@ -4,18 +4,31 @@ namespace App\Repositories;
 
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Service;
 use Illuminate\Http\Request;
 
 class CartRepository implements CartRepositoryInterface
 {
-    public function getCartByUserId(int $userId)
+    /**
+     * Get the cart by user ID.
+     *
+     * @param int $userId
+     * @return Cart|null
+     */
+    public function getCartByUserId(int $userId): ?Cart
     {
         return Cart::where('user_id', $userId)
-            ->with('items.product', 'services')
+            ->with('items.product', 'items.services')
             ->first();
     }
 
-    public function addToCart(Request $request)
+    /**
+     * Add an item to the cart.
+     *
+     * @param Request $request
+     * @return Cart
+     */
+    public function addToCart(Request $request): Cart
     {
         $data = $request->only(['product_id', 'quantity']);
 
@@ -26,26 +39,44 @@ class CartRepository implements CartRepositoryInterface
             $cartItem->quantity += $data['quantity'];
             $cartItem->save();
         } else {
-            $cart->items()->create($data);
+            $cartItem = $cart->items()->create($data);
         }
 
         if ($request->filled('services')) {
-            $cart->services()->sync($request->input('services', []));
+            foreach ($request->input('services', []) as $serviceId) {
+                $service = Service::find($serviceId);
+                if ($service) {
+                    $cartItem->services()->attach($service->id, ['price' => $service->price]);
+                }
+            }
         }
 
         return $cart;
     }
 
-    public function updateQuantity(Request $request, CartItem $cartItem)
+    /**
+     * Update the quantity of an item in the cart.
+     *
+     * @param Request $request
+     * @param CartItem $cartItem
+     * @return CartItem
+     */
+    public function updateQuantity(Request $request, CartItem $cartItem): CartItem
     {
         $cartItem->update(['quantity' => $request->input('quantity')]);
         return $cartItem;
     }
 
-    public function removeItem(CartItem $cartItem)
+    /**
+     * Remove an item from the cart.
+     *
+     * @param CartItem $cartItem
+     * @return void
+     */
+    public function removeItem(CartItem $cartItem): void
     {
-        $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
+        $cartItem->services()->detach();
+
         $cartItem->delete();
-        $cart->services()->detach();
     }
 }

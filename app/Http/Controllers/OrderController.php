@@ -4,17 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Services\OrderService;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 
 class OrderController extends Controller
 {
-    protected $orderService;
+    protected OrderService $orderService;
 
+    /**
+     * OrderController constructor.
+     *
+     * @param OrderService $orderService
+     */
     public function __construct(OrderService $orderService)
     {
         $this->orderService = $orderService;
     }
 
-    public function createOrder(Request $request)
+    /**
+     * Create a new order.
+     *
+     * @param Request $request
+     * @return JsonResponse|RedirectResponse
+     */
+    public function createOrder(Request $request): JsonResponse|RedirectResponse
     {
         $userId = auth()->id();
         $result = $this->orderService->createOrder($userId);
@@ -23,6 +36,6 @@ class OrderController extends Controller
             return response()->json(['message' => $result['message']], 400);
         }
 
-        return redirect()->route('catalog')->with('message', $result['message']);
+        return redirect()->route('products.index')->with('message', $result['message']);
     }
 }

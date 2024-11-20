@@ -4,51 +4,58 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Repositories\OrderRepositoryInterface;
+use App\DTO\CreateOrderDTO;
+use App\DTO\CreateOrderItemDTO;
 
 class OrderService
 {
-    protected $orderRepository;
+    protected OrderRepositoryInterface $orderRepository;
 
+    /**
+     * OrderService constructor.
+     *
+     * @param OrderRepositoryInterface $orderRepository
+     */
     public function __construct(OrderRepositoryInterface $orderRepository)
     {
         $this->orderRepository = $orderRepository;
     }
 
-    public function createOrder(int $userId)
+    /**
+     * Create a new order.
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function createOrder(int $userId): array
     {
-        $cart = Cart::where('user_id', $userId)->with('items.product', 'services')->first();
+        $cart = Cart::where('user_id', $userId)
+            ->with('items.services', 'items.product')
+            ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return ['success' => false, 'message' => 'Корзина пуста.'];
         }
 
         $totalAmount = $cart->items->sum(function ($item) {
-            return $item->quantity * $item->product->price;
+            $itemTotal = $item->quantity * $item->product->price;
+            $serviceTotal = $item->services->sum('price');
+            return $itemTotal + $serviceTotal;
         });
 
-        $totalAmount += $cart->services->sum('price');
+        $orderDTO = new CreateOrderDTO($userId, $totalAmount);
+        $order = $this->orderRepository->createOrder($orderDTO->toArray());
 
-        $order = $this->orderRepository->createOrder([
-            'user_id' => $userId,
-            'order_date' => now(),
-            'total_amount' => $totalAmount,
-            'status' => 'in process'
-        ]);
+        foreach ($cart->items as $cartItem) {
+            $orderItemDTO = new CreateOrderItemDTO($cartItem);
+            $orderItem = $order->items()->create($orderItemDTO->toArray());
 
-        foreach ($cart->items as $item) {
-            $order->items()->create([
-                'product_id' => $item->product_id,
-                'quantity' => $item->quantity,
-                'price' => $item->product->price
-            ]);
-        }
-
-        foreach ($cart->services as $service) {
-            $order->services()->attach($service->id, ['price' => $service->price]);
+            foreach ($orderItemDTO->services as $service) {
+                $orderItem->services()->attach($service->id, ['price' => $service->price]);
+            }
         }
 
         $cart->items()->delete();
-        $cart->services()->detach();
 
         return ['success' => true, 'message' => 'Заказ успешно оформлен!'];
     }

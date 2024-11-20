@@ -9,19 +9,37 @@ use Illuminate\Http\Request;
 
 class AuthService
 {
-    protected $userRepository;
+    protected UserRepositoryInterface $userRepository;
 
+    /**
+     * AuthService constructor.
+     *
+     * @param UserRepositoryInterface $userRepository
+     */
     public function __construct(UserRepositoryInterface $userRepository)
     {
         $this->userRepository = $userRepository;
     }
 
+    /**
+     * Register a new user.
+     *
+     * @param array $validatedData
+     * @return mixed
+     */
     public function register(array $validatedData)
     {
         return $this->userRepository->create($validatedData);
     }
 
-    public function login(array $credentials)
+    /**
+     * Authenticate a user.
+     *
+     * @param array $credentials
+     * @return array
+     * @throws ValidationException
+     */
+    public function login(array $credentials): array
     {
         if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -38,7 +56,13 @@ class AuthService
         ];
     }
 
-    public function logout(Request $request)
+    /**
+     * Logout a user.
+     *
+     * @param Request $request
+     * @return void
+     */
+    public function logout(Request $request): void
     {
         $request->user()->tokens()->delete();
         $request->session()->invalidate();

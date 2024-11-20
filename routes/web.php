@@ -6,29 +6,37 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', fn() => view('welcome'))->name('home');
+
+// Маршруты авторизации
+Route::controller(AuthController::class)->group(function () {
+    Route::get('/register', 'showRegistrationForm')->name('auth.register');
+    Route::post('/register', 'register');
+    Route::get('/login', 'showLoginForm')->name('auth.login');
+    Route::post('/login', 'login');
+    Route::post('/logout', 'logout')->name('auth.logout')->middleware('auth');
 });
 
-    Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/register', [AuthController::class, 'register']);
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth:sanctum');
-
-Route::prefix('products')->group(function () {
-    Route::get('/', [ProductsController::class, 'index'])->name('catalog');
-    Route::get('/{product}', [ProductsController::class, 'show']);
-    Route::post('/', [ProductsController::class, 'store'])->middleware(['auth:sanctum', 'role:admin']);
-    Route::put('/{product}', [ProductsController::class, 'update'])->middleware(['auth:sanctum', 'role:admin']);
-    Route::delete('/{product}', [ProductsController::class, 'destroy'])->middleware(['auth:sanctum', 'role:admin']);
+// Маршруты продуктов
+Route::prefix('products')->name('products.')->group(function () {
+    Route::get('/', [ProductsController::class, 'index'])->name('index');
+    Route::get('/{product}', [ProductsController::class, 'show'])->name('show');
+    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+        Route::post('/', [ProductsController::class, 'store'])->name('store');
+        Route::put('/{product}', [ProductsController::class, 'update'])->name('update');
+        Route::delete('/{product}', [ProductsController::class, 'destroy'])->name('destroy');
+    });
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/cart', [CartController::class, 'index'])->name('cart');
-    Route::post('/cart/add', [CartController::class, 'addToCart'])->name('cart.add');
-    Route::patch('/cart/items/{cartItem}', [CartController::class, 'updateQuantity'])->name('cart.update');
-    Route::delete('/cart/items/{cartItem}', [CartController::class, 'removeItem'])->name('cart.remove');
+// Маршруты корзины
+Route::prefix('cart')->name('cart.')->middleware('auth')->group(function () {
+    Route::get('/', [CartController::class, 'index'])->name('index');
+    Route::post('/add', [CartController::class, 'addToCart'])->name('add');
+    Route::patch('/items/{cartItem}', [CartController::class, 'updateQuantity'])->name('update');
+    Route::delete('/items/{cartItem}', [CartController::class, 'removeItem'])->name('remove');
 });
 
-Route::post('/order', [OrderController::class, 'createOrder'])->name('order')->middleware('auth:sanctum');
+// Маршруты заказов
+Route::post('/order', [OrderController::class, 'createOrder'])
+    ->name('order.create')
+    ->middleware('auth');
