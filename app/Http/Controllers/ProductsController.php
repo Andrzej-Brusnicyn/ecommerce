@@ -38,6 +38,21 @@ class ProductsController extends Controller
     }
 
     /**
+     * Export all products to an S3 bucket.
+     *
+     * @return JsonResponse
+     */
+    public function exportProductsToS3(): JsonResponse
+    {
+        $fileUrl = $this->productRepository->exportAll();
+
+        if ($fileUrl) {
+            return response()->json(['message' => 'File uploaded successfully', 'url' => $fileUrl], 200);
+        }
+
+        return response()->json(['message' => 'File upload failed'], 500);
+    }
+    /**
      * Display a listing of the products.
      *
      * @param ProductFilter $filter
