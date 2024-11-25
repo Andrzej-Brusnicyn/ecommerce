@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 
@@ -36,10 +37,10 @@ class AuthService
      * Authenticate a user.
      *
      * @param array $credentials
-     * @return array
      * @throws ValidationException
+     * @return Authenticatable
      */
-    public function login(array $credentials): array
+    public function login(array $credentials): Authenticatable
     {
         if (!Auth::attempt($credentials)) {
             throw ValidationException::withMessages([
@@ -47,13 +48,7 @@ class AuthService
             ]);
         }
 
-        $user = Auth::user();
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return [
-            'token' => $token,
-            'user' => $user
-        ];
+        return Auth::user();
     }
 
     /**
@@ -64,7 +59,6 @@ class AuthService
      */
     public function logout(Request $request): void
     {
-        $request->user()->tokens()->delete();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     }
