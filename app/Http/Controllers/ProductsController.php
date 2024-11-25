@@ -109,7 +109,7 @@ class ProductsController extends Controller
     public function store(StoreProductRequest $request): RedirectResponse
     {
         $dto = new CreateProductDTO($request->validated());
-        $product = $this->productRepository->create($dto->toArray());
+        $this->productRepository->create($dto->toArray());
         return redirect('/admin')->with('success', 'Товар успешно добавлен');
     }
 
@@ -123,7 +123,7 @@ class ProductsController extends Controller
     public function update(UpdateProductRequest $request, int $product_id): RedirectResponse
     {
         $dto = new CreateProductDTO($request->validated());
-        $product = $this->productRepository->update($product_id, $dto->toArray());
+        $this->productRepository->update($product_id, $dto->toArray());
         return redirect('/admin')->with('success', 'Товар успешно обновлён');
     }
 

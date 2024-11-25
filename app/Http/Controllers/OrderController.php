@@ -24,10 +24,9 @@ class OrderController extends Controller
     /**
      * Create a new order.
      *
-     * @param Request $request
      * @return JsonResponse|RedirectResponse
      */
-    public function createOrder(Request $request): JsonResponse|RedirectResponse
+    public function createOrder(): JsonResponse|RedirectResponse
     {
         $userId = auth()->id();
         $result = $this->orderService->createOrder($userId);
