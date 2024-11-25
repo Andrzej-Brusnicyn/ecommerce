@@ -12,7 +12,7 @@ trait HasFilter
      * @param mixed $filter
      * @return Builder
      */
-    public function scopeFilter(Builder $builder, $filter): Builder
+    public function scopeFilter(Builder $builder, mixed $filter): Builder
     {
         return $filter->apply($builder);
     }

@@ -5,26 +5,19 @@ namespace App\Repositories;
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Collection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
+
     /**
-     * Get all products and upload them as JSON to an S3 bucket.
+     * Get all products without filters or pagination.
      *
-     * @return string|null URL to the uploaded JSON file or null on failure
+     * @return Collection
      */
-    public function exportAll(): ?string
+    public function getAll(): Collection
     {
-        $products = Product::all();
-        $jsonContent = $products->toJson();
-        $filePath = 'products/all_products.json';
-        $result = Storage::disk('s3')->put($filePath, $jsonContent);
-
-        if ($result) {
-            return Storage::disk('s3')->url($filePath);
-        }
-
-        return null;
+        return Product::with('categories')->get();
     }
     /**
      * Get all products with filter.

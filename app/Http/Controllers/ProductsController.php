@@ -13,6 +13,8 @@ use App\Services\CategoryService;
 use App\DTO\CreateProductDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
+use App\Jobs\ExportProductsJob;
 
 class ProductsController extends Controller
 {
@@ -36,6 +38,19 @@ class ProductsController extends Controller
         $this->categoryService = $categoryService;
         $this->serviceService = $serviceService;
     }
+    /**
+     * Show all products.
+     *
+     * @return View
+     */
+    public function getAll(): View
+    {
+        $products = $this->productRepository->getAll();
+        $categories = $this->categoryService->getAll();
+
+        return view('admin', compact('products', 'categories'));
+    }
+
 
     /**
      * Export all products to an S3 bucket.
@@ -44,13 +59,9 @@ class ProductsController extends Controller
      */
     public function exportProductsToS3(): JsonResponse
     {
-        $fileUrl = $this->productRepository->exportAll();
+        ExportProductsJob::dispatch()->onQueue('default');
 
-        if ($fileUrl) {
-            return response()->json(['message' => 'File uploaded successfully', 'url' => $fileUrl], 200);
-        }
-
-        return response()->json(['message' => 'File upload failed'], 500);
+        return response()->json(['message' => 'Export task added to the queue'], 200);
     }
     /**
      * Display a listing of the products.
@@ -93,16 +104,13 @@ class ProductsController extends Controller
      * Store a newly created product in storage.
      *
      * @param StoreProductRequest $request
-     * @return JsonResponse
+     * @return RedirectResponse
      */
-    public function store(StoreProductRequest $request): JsonResponse
+    public function store(StoreProductRequest $request): RedirectResponse
     {
         $dto = new CreateProductDTO($request->validated());
         $product = $this->productRepository->create($dto->toArray());
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $product
-        ], 201);
+        return redirect('/admin')->with('success', 'Товар успешно добавлен');
     }
 
     /**
@@ -110,30 +118,25 @@ class ProductsController extends Controller
      *
      * @param UpdateProductRequest $request
      * @param int $product_id
-     * @return JsonResponse
+     * @return RedirectResponse
      */
-    public function update(UpdateProductRequest $request, int $product_id): JsonResponse
+    public function update(UpdateProductRequest $request, int $product_id): RedirectResponse
     {
         $dto = new CreateProductDTO($request->validated());
         $product = $this->productRepository->update($product_id, $dto->toArray());
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $product
-        ]);
+        return redirect('/admin')->with('success', 'Товар успешно обновлён');
     }
 
     /**
      * Remove the specified product from storage.
      *
      * @param int $product_id
-     * @return JsonResponse
+     * @return RedirectResponse
      */
-    public function destroy(int $product_id): JsonResponse
+    public function destroy(int $product_id): RedirectResponse
     {
         $this->productRepository->delete($product_id);
 
-        return response()->json([
-            'message' => 'Product deleted successfully'
-        ]);
+        return redirect('/admin')->with('success', 'Товар успешно удалён');
     }
 }

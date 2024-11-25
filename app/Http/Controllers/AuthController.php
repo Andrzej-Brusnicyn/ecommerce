@@ -7,7 +7,6 @@ use App\Http\Requests\RegisterRequest;
 use App\Services\AuthService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 class AuthController extends Controller
@@ -41,13 +40,16 @@ class AuthController extends Controller
      * Authenticate a user.
      *
      * @param LoginRequest $request
-     * @return JsonResponse
+     * @return RedirectResponse
      */
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request): RedirectResponse
     {
-        $result = $this->authService->login($request->only('email', 'password'));
+        if ($this->authService->login($request->only('email', 'password'))) {
+            $request->session()->regenerate();
+            return redirect()->route('products.index');
+        }
 
-        return response()->json($result, 200);
+        return redirect()->route('auth.login')->withErrors(['email' => 'Invalid credentials.']);
     }
 
     /**
@@ -60,7 +62,7 @@ class AuthController extends Controller
     {
         $this->authService->logout($request);
 
-        return redirect()->route('catalog')->with('message', 'You have successfully logged out!');
+        return redirect()->route('products.index')->with('message', 'You have successfully logged out!');
     }
 
     /**

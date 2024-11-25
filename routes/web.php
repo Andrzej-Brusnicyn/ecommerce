@@ -19,7 +19,7 @@ Route::controller(AuthController::class)->group(function () {
 Route::prefix('products')->name('products.')->group(function () {
     Route::get('/', [ProductsController::class, 'index'])->name('index');
     Route::get('/{product}', [ProductsController::class, 'show'])->name('show');
-    Route::middleware(['auth:sanctum', 'role:admin'])->group(function () {
+    Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::post('/', [ProductsController::class, 'store'])->name('store');
         Route::put('/{product}', [ProductsController::class, 'update'])->name('update');
         Route::delete('/{product}', [ProductsController::class, 'destroy'])->name('destroy');
@@ -38,3 +38,5 @@ Route::post('/order', [OrderController::class, 'createOrder'])
     ->middleware('auth');
 
 Route::get('/export-products', [ProductsController::class, 'exportProductsToS3']);
+
+Route::get('/admin', [ProductsController::class, 'getAll'])->middleware(['auth', 'role:admin'])->name('admin');
