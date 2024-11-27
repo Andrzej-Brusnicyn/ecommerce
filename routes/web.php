@@ -33,9 +33,7 @@ Route::prefix('cart')->name('cart.')->middleware('auth')->group(function () {
     Route::delete('/items/{cartItem}', [CartController::class, 'removeItem'])->name('remove');
 });
 
-Route::post('/order', [OrderController::class, 'createOrder'])
-    ->name('order.create')
-    ->middleware('auth');
+Route::post('/order', [OrderController::class, 'createOrder'])->name('order.create')->middleware('auth');
 
 Route::get('/export-products', [ProductsController::class, 'exportProductsToS3']);
 

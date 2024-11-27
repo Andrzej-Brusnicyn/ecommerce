@@ -33,7 +33,8 @@ class AuthController extends Controller
     {
         $this->authService->register($request->validated());
 
-        return redirect()->route('login')->with('message', 'You have successfully registered!');
+        return redirect()->route('login')
+            ->with('message', 'You have successfully registered!');
     }
 
     /**
@@ -49,7 +50,8 @@ class AuthController extends Controller
             return redirect()->route('products.index');
         }
 
-        return redirect()->route('auth.login')->withErrors(['email' => 'Invalid credentials.']);
+        return redirect()->route('auth.login')
+            ->withErrors(['email' => 'Invalid credentials.']);
     }
 
     /**
@@ -62,7 +64,8 @@ class AuthController extends Controller
     {
         $this->authService->logout($request);
 
-        return redirect()->route('products.index')->with('message', 'You have successfully logged out!');
+        return redirect()->route('products.index')
+            ->with('message', 'You have successfully logged out!');
     }
 
     /**
