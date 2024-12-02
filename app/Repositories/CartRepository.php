@@ -28,28 +28,64 @@ class CartRepository implements CartRepositoryInterface
      * @param Request $request
      * @return Cart
      */
-    public function addToCart(Request $request): Cart
+    private function getOrCreateCart(int $userId): Cart
     {
-        $data = $request->only(['product_id', 'quantity']);
+        return Cart::firstOrCreate(['user_id' => $userId]);
+    }
 
-        $cart = Cart::firstOrCreate(['user_id' => auth()->id()]);
-
+    /**
+     * Add or update a cart item.
+     *
+     * @param Cart $cart
+     * @param array $data
+     * @return CartItem
+     */
+    private function addOrUpdateCartItem(Cart $cart, array $data): CartItem
+    {
         $cartItem = $cart->items()->where('product_id', $data['product_id'])->first();
+
         if ($cartItem) {
-            $cartItem->quantity += $data['quantity'];
-            $cartItem->save();
+            $cartItem->quantity += $data['quantity']->save();
         } else {
             $cartItem = $cart->items()->create($data);
         }
 
-        if ($request->filled('services')) {
-            foreach ($request->input('services', []) as $serviceId) {
+        return $cartItem;
+    }
+
+    /**
+     * Attach services to a cart item.
+     *
+     * @param CartItem $cartItem
+     * @param array $serviceIds
+     * @return void
+     */
+    private function attachServicesToCartItem(CartItem $cartItem, array $serviceIds): void
+    {
+        if (!empty($serviceIds)) {
+            foreach ($serviceIds as $serviceId) {
                 $service = Service::find($serviceId);
                 if ($service) {
                     $cartItem->services()->attach($service->id, ['price' => $service->price]);
                 }
             }
         }
+    }
+
+    /**
+     * Add a product to the cart or update its quantity.
+     *
+     * @param Request $request
+     * @return Cart
+     */
+    public function addToCart(Request $request): Cart
+    {
+        $data = $request->only(['product_id', 'quantity']);
+        $services = $request->input('services', []);
+
+        $cart = $this->getOrCreateCart(auth()->id());
+        $cartItem = $this->addOrUpdateCartItem($cart, $data);
+        $this->attachServicesToCartItem($cartItem, $services);
 
         return $cart;
     }
