@@ -9,6 +9,7 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Repositories\ProductRepositoryInterface;
 use App\Services\CurrencyService;
 use App\Services\ServiceService;
+use App\Services\PriceConversionService;
 use App\Services\CategoryService;
 use App\DTO\CreateProductDTO;
 use Illuminate\Http\JsonResponse;
@@ -21,6 +22,7 @@ class ProductsController extends Controller
     protected ProductRepositoryInterface $productRepository;
     protected CategoryService $categoryService;
     protected ServiceService $serviceService;
+    protected PriceConversionService $priceConversionService;
 
     /**
      * ProductsController constructor.
@@ -28,15 +30,18 @@ class ProductsController extends Controller
      * @param ProductRepositoryInterface $productRepository
      * @param CategoryService $categoryService
      * @param ServiceService $serviceService
+     * @param PriceConversionService $priceConversionService
      */
     public function __construct(
         ProductRepositoryInterface $productRepository,
         CategoryService $categoryService,
-        ServiceService $serviceService
+        ServiceService $serviceService,
+        PriceConversionService $priceConversionService
     ) {
         $this->productRepository = $productRepository;
         $this->categoryService = $categoryService;
         $this->serviceService = $serviceService;
+        $this->priceConversionService = $priceConversionService;
     }
 
     /**
@@ -75,16 +80,7 @@ class ProductsController extends Controller
         $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());
         $categories = $this->categoryService->getAll();
 
-        $currencyService = new CurrencyService();
-
-        $currencies = config('constants.currencies');
-
-        foreach ($products as $product) {
-            foreach ($currencies as $currency) {
-                $priceKey = 'price_' . strtolower($currency);
-                $product->$priceKey = $currencyService->convert($product->price, $currency);
-            }
-        }
+        $products = $this->priceConversionService->convertPrices($products, config('constants.currencies'));
 
         return view('index', compact('products', 'categories'));
     }

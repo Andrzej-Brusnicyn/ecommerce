@@ -28,7 +28,7 @@ class ProductRepository implements ProductRepositoryInterface
      */
     public function getAllWithFilter($filter): LengthAwarePaginator
     {
-        return Product::filter($filter)->paginate(5);
+        return Product::filter($filter)->paginate(config('constants.pagination'));
     }
 
     /**

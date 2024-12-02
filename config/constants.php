@@ -10,5 +10,7 @@ return [
         's3' => [
             'products_path' => 'products/all_products.json',
         ],
+        'name'=> 's3'
     ],
+    'pagination' => 5,
 ];
