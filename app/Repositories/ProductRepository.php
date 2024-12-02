@@ -19,6 +19,7 @@ class ProductRepository implements ProductRepositoryInterface
     {
         return Product::with('categories')->get();
     }
+
     /**
      * Get all products with filter.
      *
@@ -53,6 +54,7 @@ class ProductRepository implements ProductRepositoryInterface
         if (isset($data['category_id'])) {
             $product->categories()->attach($data['category_id']);
         }
+
         return $product;
     }
 
@@ -70,6 +72,7 @@ class ProductRepository implements ProductRepositoryInterface
         if (isset($data['category_id'])) {
             $product->categories()->sync([$data['category_id']]);
         }
+
         return $product;
     }
 
@@ -83,6 +86,7 @@ class ProductRepository implements ProductRepositoryInterface
     {
         $product = Product::find($product_id);
         $product->categories()->detach();
+
         return $product->delete();
     }
 }

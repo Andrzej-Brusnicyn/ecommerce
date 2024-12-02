@@ -38,6 +38,7 @@ class ProductsController extends Controller
         $this->categoryService = $categoryService;
         $this->serviceService = $serviceService;
     }
+
     /**
      * Show all products.
      *
@@ -51,7 +52,6 @@ class ProductsController extends Controller
         return view('admin', compact('products', 'categories'));
     }
 
-
     /**
      * Export all products to an S3 bucket.
      *
@@ -63,6 +63,7 @@ class ProductsController extends Controller
 
         return response()->json(['message' => 'Export task added to the queue'], 200);
     }
+
     /**
      * Display a listing of the products.
      *
@@ -76,10 +77,13 @@ class ProductsController extends Controller
 
         $currencyService = new CurrencyService();
 
+        $currencies = config('constants.currencies');
+
         foreach ($products as $product) {
-            $product->price_usd = $currencyService->convert($product->price, 'USD');
-            $product->price_eur = $currencyService->convert($product->price, 'EUR');
-            $product->price_rub = $currencyService->convert($product->price, 'RUB');
+            foreach ($currencies as $currency) {
+                $priceKey = 'price_' . strtolower($currency);
+                $product->$priceKey = $currencyService->convert($product->price, $currency);
+            }
         }
 
         return view('index', compact('products', 'categories'));
@@ -110,7 +114,7 @@ class ProductsController extends Controller
     {
         $dto = new CreateProductDTO($request->validated());
         $this->productRepository->create($dto->toArray());
-        return redirect('/admin')->with('success', 'Товар успешно добавлен');
+        return redirect()->route('admin')->with('success', 'Product successfully added');
     }
 
     /**
@@ -124,7 +128,7 @@ class ProductsController extends Controller
     {
         $dto = new CreateProductDTO($request->validated());
         $this->productRepository->update($product_id, $dto->toArray());
-        return redirect('/admin')->with('success', 'Товар успешно обновлён');
+        return redirect()->route('admin')->with('success', 'Product successfully updated');
     }
 
     /**
@@ -137,6 +141,6 @@ class ProductsController extends Controller
     {
         $this->productRepository->delete($product_id);
 
-        return redirect('/admin')->with('success', 'Товар успешно удалён');
+        return redirect()->route('admin')->with('success', 'Product successfully deleted');
     }
 }

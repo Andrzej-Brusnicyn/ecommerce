@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\UserRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
 
@@ -42,13 +43,13 @@ class AuthService
      */
     public function login(array $credentials): Authenticatable
     {
-        if (!Auth::attempt($credentials)) {
+        if (!auth()->attempt($credentials)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
 
-        return Auth::user();
+        return auth()->user();
     }
 
     /**

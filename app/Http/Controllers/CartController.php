@@ -63,6 +63,7 @@ class CartController extends Controller
     public function updateQuantity(Request $request, CartItem $cartItem): RedirectResponse
     {
         $this->cartRepository->updateQuantity($request, $cartItem);
+
         return redirect()->route('cart.index')
             ->with('message', 'You have successfully changed the quantity of the product!');
     }
@@ -76,6 +77,7 @@ class CartController extends Controller
     public function removeItem(CartItem $cartItem): RedirectResponse
     {
         $this->cartRepository->removeItem($cartItem);
+
         return redirect()->route('cart.index')
             ->with('message', 'You have successfully removed the product from the cart!');
     }

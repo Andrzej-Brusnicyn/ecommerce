@@ -7,9 +7,22 @@ use Aws\S3\S3Client;
 
 class CurrencyService
 {
-    private array $currencies = ['USD', 'EUR', 'RUB'];
-    private const CACHE_KEY = 'currency_rates';
-    private const CACHE_TTL = 3600;
+    private array $currencies;
+    private string $cacheKey;
+    private int $cacheTtl;
+    private string $bankUrl;
+
+    /**
+     * CurrencyService constructor.
+     *
+     */
+    public function __construct()
+    {
+        $this->currencies = config('constants.currencies');
+        $this->cacheKey = config('constants.currency.cache_key');
+        $this->cacheTtl = config('constants.currency.cache_ttl');
+        $this->bankUrl = config('constants.currency.bank_url');
+    }
 
     /**
      * Convert an amount to the specified currency.
@@ -22,6 +35,7 @@ class CurrencyService
     public function convert(float $amount, string $currency): float
     {
         $rate = $this->getRate($currency);
+
         return round($amount / $rate, 2);
     }
 
@@ -50,7 +64,7 @@ class CurrencyService
      */
     private function getRates(): array
     {
-        return Cache::remember(self::CACHE_KEY, self::CACHE_TTL, function () {
+        return Cache::remember($this->cacheKey, $this->cacheTtl, function () {
             return $this->fetchRatesFromBank();
         });
     }
@@ -64,17 +78,26 @@ class CurrencyService
     private function fetchRatesFromBank(): array
     {
         $rates = [];
-        $xml = simplexml_load_file('https://bankdabrabyt.by/export_courses.php');
+        try {
+            $xml = simplexml_load_file($this->bankUrl);
 
-        foreach ($xml->filials->filial[0]->rates->value as $value) {
-            $currency = (string)$value['iso'];
-            if (in_array($currency, $this->currencies)) {
-                $rates[$currency] = (float)$value['sale'];
+            if ($xml === false) {
+                throw new Exception('Failed to load XML from the bank');
             }
-        }
 
-        if (empty($rates)) {
-            throw new Exception('Failed to fetch currency rates from bank');
+            foreach ($xml->filials->filial[0]->rates->value as $value) {
+                $currency = (string)$value['iso'];
+                if (in_array($currency, $this->currencies)) {
+                    $rates[$currency] = (float)$value['sale'];
+                }
+            }
+
+            if (empty($rates)) {
+                throw new Exception('No valid currency rates found');
+            }
+
+        } catch (Exception $e) {
+            throw new Exception('Failed to fetch currency rates: ' . $e->getMessage());
         }
 
         return $rates;

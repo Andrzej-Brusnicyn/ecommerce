@@ -64,6 +64,7 @@ class CartRepository implements CartRepositoryInterface
     public function updateQuantity(Request $request, CartItem $cartItem): CartItem
     {
         $cartItem->update(['quantity' => $request->input('quantity')]);
+
         return $cartItem;
     }
 

@@ -23,10 +23,6 @@ class ExportProductsJob implements ShouldQueue
     {
         $products = Product::all();
 
-        $jsonContent = $products->toJson();
-
-        $filePath = 'products/all_products.json';
-
-        Storage::disk('s3')->put($filePath, $jsonContent);
+        Storage::disk('s3')->put(config('constants.storage.s3.products_path'), $products->toJson());
     }
 }
