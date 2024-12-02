@@ -28,8 +28,7 @@ class OrderController extends Controller
      */
     public function createOrder(): JsonResponse|RedirectResponse
     {
-        $userId = auth()->id();
-        $result = $this->orderService->createOrder($userId);
+        $result = $this->orderService->createOrder(auth()->id());
 
         if (!$result['success']) {
             return response()->json(['message' => $result['message']], 400);

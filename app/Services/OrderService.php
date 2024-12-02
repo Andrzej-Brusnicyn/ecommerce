@@ -34,7 +34,7 @@ class OrderService
             ->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return ['success' => false, 'message' => 'Корзина пуста.'];
+            return ['success' => false, 'message' => 'Cart empty.'];
         }
 
         $totalAmount = $cart->items->sum(function ($item) {
@@ -57,6 +57,6 @@ class OrderService
 
         $cart->items()->delete();
 
-        return ['success' => true, 'message' => 'Заказ успешно оформлен!'];
+        return ['success' => true, 'message' => 'Order successfully completed!'];
     }
 }
