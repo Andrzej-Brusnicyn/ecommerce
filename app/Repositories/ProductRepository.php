@@ -5,7 +5,7 @@ namespace App\Repositories;
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\LazyCollection;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -13,11 +13,11 @@ class ProductRepository implements ProductRepositoryInterface
     /**
      * Get all products without filters or pagination.
      *
-     * @return Collection
+     * @return LazyCollection
      */
-    public function getAll(): Collection
+    public function getAll(): LazyCollection
     {
-        return Product::with('categories')->get();
+        return Product::cursor();
     }
 
     /**

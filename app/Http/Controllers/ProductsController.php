@@ -114,6 +114,7 @@ class ProductsController extends Controller
     {
         $dto = new CreateProductDTO($request->validated());
         $this->productRepository->create($dto->toArray());
+
         return redirect()->route('admin')->with('success', 'Product successfully added');
     }
 
@@ -128,6 +129,7 @@ class ProductsController extends Controller
     {
         $dto = new CreateProductDTO($request->validated());
         $this->productRepository->update($product_id, $dto->toArray());
+
         return redirect()->route('admin')->with('success', 'Product successfully updated');
     }
 

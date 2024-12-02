@@ -21,8 +21,8 @@ class ExportProductsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $products = Product::all();
-
-        Storage::disk('s3')->put(config('constants.storage.s3.products_path'), $products->toJson());
+        Product::chunk(1000, function ($products) {
+            Storage::disk('s3')->put(config('constants.storage.s3.products_path'), $products->toJson());
+        });
     }
 }
