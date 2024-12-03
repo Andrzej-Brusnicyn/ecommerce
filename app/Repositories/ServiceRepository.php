@@ -7,7 +7,6 @@ use App\Models\Service;
 
 class ServiceRepository implements ServiceRepositoryInterface
 {
-
     /**
      * Get all services.
      *
