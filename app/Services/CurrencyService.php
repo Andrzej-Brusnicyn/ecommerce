@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Services;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Exception;
-use Aws\S3\S3Client;
 
 class CurrencyService
 {
@@ -11,17 +10,19 @@ class CurrencyService
     private string $cacheKey;
     private int $cacheTtl;
     private string $bankUrl;
+    private CacheRepository $cache;
 
     /**
      * CurrencyService constructor.
      *
      */
-    public function __construct()
+    public function __construct(CacheRepository $cache)
     {
         $this->currencies = config('constants.currencies');
         $this->cacheKey = config('constants.currency.cache_key');
         $this->cacheTtl = config('constants.currency.cache_ttl');
         $this->bankUrl = config('constants.currency.bank_url');
+        $this->cache = $cache;
     }
 
     /**
@@ -64,7 +65,7 @@ class CurrencyService
      */
     private function getRates(): array
     {
-        return Cache::remember($this->cacheKey, $this->cacheTtl, function () {
+        return $this->cache->remember($this->cacheKey, $this->cacheTtl, function () {
             return $this->fetchRatesFromBank();
         });
     }

@@ -3,14 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Filters\ProductFilter;
+use App\Repositories\CategoryRepository;
+use App\Repositories\CategoryRepositoryInterface;
+use App\Repositories\ServiceRepository;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Repositories\ProductRepositoryInterface;
+use App\Repositories\ServiceRepositoryInterface;
 use App\Services\CurrencyService;
-use App\Services\ServiceService;
 use App\Services\PriceConversionService;
-use App\Services\CategoryService;
 use App\DTO\CreateProductDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -20,27 +22,27 @@ use App\Jobs\ExportProductsJob;
 class ProductsController extends Controller
 {
     protected ProductRepositoryInterface $productRepository;
-    protected CategoryService $categoryService;
-    protected ServiceService $serviceService;
+    protected ServiceRepositoryInterface $serviceRepository;
+    protected CategoryRepositoryInterface $categoryRepository;
     protected PriceConversionService $priceConversionService;
 
     /**
      * ProductsController constructor.
      *
      * @param ProductRepositoryInterface $productRepository
-     * @param CategoryService $categoryService
-     * @param ServiceService $serviceService
+     * @param CategoryRepositoryInterface $categoryRepository
+     * @param ServiceRepositoryInterface $serviceRepository
      * @param PriceConversionService $priceConversionService
      */
     public function __construct(
         ProductRepositoryInterface $productRepository,
-        CategoryService $categoryService,
-        ServiceService $serviceService,
+        ServiceRepositoryInterface $serviceRepository,
+        CategoryRepositoryInterface $categoryRepository,
         PriceConversionService $priceConversionService
     ) {
         $this->productRepository = $productRepository;
-        $this->categoryService = $categoryService;
-        $this->serviceService = $serviceService;
+        $this->serviceRepository = $serviceRepository;
+        $this->categoryRepository = $categoryRepository;
         $this->priceConversionService = $priceConversionService;
     }
 
@@ -52,7 +54,7 @@ class ProductsController extends Controller
     public function getAll(): View
     {
         $products = $this->productRepository->getAll();
-        $categories = $this->categoryService->getAll();
+        $categories = $this->categoryRepository->getAll();
 
         return view('admin', compact('products', 'categories'));
     }
@@ -78,7 +80,7 @@ class ProductsController extends Controller
     public function index(ProductFilter $filter): View
     {
         $products = $this->productRepository->getAllWithFilter($filter)->appends(request()->all());
-        $categories = $this->categoryService->getAll();
+        $categories = $this->categoryRepository->getAll();
 
         $products = $this->priceConversionService->convertPrices($products, config('constants.currencies'));
 
@@ -95,7 +97,7 @@ class ProductsController extends Controller
     {
         $product = $this->productRepository->findById($product_id);
         $category = $product->categories->first();
-        $services = $this->serviceService->getAll();
+        $services = $this->serviceRepository->getAll();
 
         return view('product', compact('product', 'category', 'services'));
     }

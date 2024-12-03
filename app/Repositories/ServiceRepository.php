@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Services;
-use App\Models\Service;
-use Illuminate\Database\Eloquent\Collection;
+namespace App\Repositories;
 
-class ServiceService
+use Illuminate\Database\Eloquent\Collection;
+use App\Models\Service;
+
+class ServiceRepository implements ServiceRepositoryInterface
 {
+
     /**
      * Get all services.
      *

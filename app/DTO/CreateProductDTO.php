@@ -12,7 +12,7 @@ readonly class CreateProductDTO
     /**
      * CreateProductDTO constructor.
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      */
     public function __construct(array $data)
     {
@@ -25,7 +25,7 @@ readonly class CreateProductDTO
     /**
      * Convert the DTO to an array.
      *
-     * @return array
+     * @return array<string, string|float|int>
      */
     public function toArray(): array
     {

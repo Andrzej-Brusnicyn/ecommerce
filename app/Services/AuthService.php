@@ -24,6 +24,16 @@ class AuthService
     }
 
     /**
+     * Get the authenticated user's ID.
+     *
+     * @return int|null
+     */
+    public function getUserId(): ?int
+    {
+        return auth()->id();
+    }
+
+    /**
      * Register a new user.
      *
      * @param array $validatedData

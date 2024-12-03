@@ -20,7 +20,7 @@ class PriceConversionService
     {
         foreach ($products as $product) {
             foreach ($currencies as $currency) {
-                $priceKey = getCurrencyPriceKey($currency);
+                $priceKey = 'price_' . strtolower($currency);
                 $product->$priceKey = $this->currencyService->convert($product->price, $currency);
             }
         }

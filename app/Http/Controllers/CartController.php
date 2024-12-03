@@ -8,22 +8,29 @@ use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use App\Services\AuthService;
 
 class CartController extends Controller
 {
     protected CartRepositoryInterface $cartRepository;
     protected CartService $cartService;
+    protected AuthService $authService;
 
     /**
      * CartController constructor.
      *
      * @param CartRepositoryInterface $cartRepository
      * @param CartService $cartService
+     * @param AuthService $authService
      */
-    public function __construct(CartRepositoryInterface $cartRepository, CartService $cartService)
-    {
+    public function __construct(
+        CartRepositoryInterface $cartRepository,
+        CartService $cartService,
+        AuthService $authService
+    ) {
         $this->cartRepository = $cartRepository;
         $this->cartService = $cartService;
+        $this->authService = $authService;
     }
 
     /**
@@ -33,7 +40,8 @@ class CartController extends Controller
      */
     public function index(): View
     {
-        $cart = $this->cartRepository->getCartByUserId(auth()->id());
+        $userId = $this->authService->getUserId();
+        $cart = $this->cartRepository->getCartByUserId($userId);
         $totalAmount = $this->cartService->calculateTotalAmount($cart);
 
         return view('cart', compact('cart', 'totalAmount'));

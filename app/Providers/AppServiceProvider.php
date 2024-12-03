@@ -12,6 +12,10 @@ use App\Repositories\CartRepository;
 use App\Repositories\CartRepositoryInterface;
 use App\Repositories\OrderRepository;
 use App\Repositories\OrderRepositoryInterface;
+use App\Repositories\ServiceRepository;
+use App\Repositories\ServiceRepositoryInterface;
+use App\Repositories\CategoryRepository;
+use App\Repositories\CategoryRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +28,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CartRepositoryInterface::class, CartRepository::class);
         $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        $this->app->bind(ServiceRepositoryInterface::class, ServiceRepository::class);
+        $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
         $this->app->bind(AuthService::class);
     }
 

@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Services;
+namespace App\Repositories;
+
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Collection;
 
-class CategoryService
+class CategoryRepository implements CategoryRepositoryInterface
 {
     /**
-     * Get all categories.
+     * Get all services.
      *
      * @return Collection
      */
