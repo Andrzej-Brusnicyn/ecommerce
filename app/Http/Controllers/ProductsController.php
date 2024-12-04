@@ -3,21 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Filters\ProductFilter;
-use App\Repositories\CategoryRepository;
 use App\Repositories\CategoryRepositoryInterface;
-use App\Repositories\ServiceRepository;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Repositories\ProductRepository;
 use App\Repositories\ProductRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
-use App\Services\CurrencyService;
 use App\Services\PriceConversionService;
 use App\DTO\CreateProductDTO;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Jobs\ExportProductsJob;
+use Illuminate\Contracts\Filesystem\Filesystem;
 
 class ProductsController extends Controller
 {
@@ -62,11 +60,14 @@ class ProductsController extends Controller
     /**
      * Export all products to an S3 bucket.
      *
+     * @param ProductRepositoryInterface $productRepository
+     * @param Filesystem $filesystem
      * @return JsonResponse
      */
-    public function exportProductsToS3(): JsonResponse
+    public function exportProductsToS3(ProductRepositoryInterface $productRepository, Filesystem $filesystem): JsonResponse
     {
-        ExportProductsJob::dispatch()->onQueue('default');
+
+        ExportProductsJob::dispatch($productRepository, $filesystem)->onQueue('default');
 
         return response()->json(['message' => 'Export task added to the queue'], 200);
     }

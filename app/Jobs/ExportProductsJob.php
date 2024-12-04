@@ -7,13 +7,27 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use App\Models\Product;
+use App\Repositories\ProductRepositoryInterface;
+use Illuminate\Contracts\Filesystem\Filesystem;
 
 class ExportProductsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    private ProductRepositoryInterface $productRepository;
+    private Filesystem $filesystem;
+
+    /**
+     * ExportProductsJob constructor.
+     *
+     * @param ProductRepositoryInterface $productRepository
+     * @param Filesystem $filesystem
+     */
+    public function __construct(ProductRepositoryInterface $productRepository, Filesystem $filesystem)
+    {
+        $this->productRepository = $productRepository;
+        $this->filesystem = $filesystem;
+    }
 
     /**
      * Execute the job.
@@ -22,8 +36,8 @@ class ExportProductsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        DB::table('products')->chunk(1000, function ($products) {
-            Storage::disk(config('constants.storage.name'))->put(config('constants.storage.s3.products_path'), $products->toJson());
+        $this->productRepository->chunk(1000, function ($products) {
+            $this->filesystem->put(config('constants.storage.s3.products_path'), $products->toJson());
         });
     }
 }

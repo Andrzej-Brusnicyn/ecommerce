@@ -3,29 +3,87 @@
 namespace App\Repositories;
 
 use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\Service;
+use App\Models\CartItem;
 use Illuminate\Http\Request;
+use App\Services\CartService;
 
 class CartRepository implements CartRepositoryInterface
 {
+    protected CartService $cartService;
+
     /**
-     * Get the cart by user ID.
+     * CartRepository constructor.
+     *
+     * @param CartService $cartService
+     */
+    public function __construct(CartService $cartService)
+    {
+        $this->cartService = $cartService;
+    }
+
+    /**
+     * Get the cart and calculate the total amount.
      *
      * @param int $userId
-     * @return Cart|null
+     * @return array
      */
-    public function getCartByUserId(int $userId): ?Cart
+    public function getCartWithTotal(int $userId): array
     {
-        return Cart::where('user_id', $userId)
+        $cart = Cart::where('user_id', $userId)
             ->with('items.product', 'items.services')
             ->first();
+
+        $totalAmount = $cart ? $this->cartService->calculateTotalAmount($cart) : 0;
+
+        return compact('cart', 'totalAmount');
     }
 
     /**
      * Add an item to the cart.
      *
      * @param Request $request
+     * @return void
+     */
+    public function addToCart(Request $request, $userId): void
+    {
+        $cart = $this->getOrCreateCart($userId);
+
+        $data = $request->only(['product_id', 'quantity']);
+        $services = $request->input('services', []);
+
+        $cartItem = $this->addOrUpdateCartItem($cart, $data);
+        $this->attachServicesToCartItem($cartItem, $services);
+    }
+
+    /**
+     * Update the quantity of an item in the cart.
+     *
+     * @param Request $request
+     * @param CartItem $cartItem
+     * @return void
+     */
+    public function updateQuantity(Request $request, CartItem $cartItem): void
+    {
+        $cartItem->update(['quantity' => $request->input('quantity')]);
+    }
+
+    /**
+     * Remove an item from the cart.
+     *
+     * @param CartItem $cartItem
+     * @return void
+     */
+    public function removeItem(CartItem $cartItem): void
+    {
+        $cartItem->services()->detach();
+        $cartItem->delete();
+    }
+
+    /**
+     * Get or create a cart for the user.
+     *
+     * @param int $userId
      * @return Cart
      */
     private function getOrCreateCart(int $userId): Cart
@@ -45,7 +103,7 @@ class CartRepository implements CartRepositoryInterface
         $cartItem = $cart->items()->where('product_id', $data['product_id'])->first();
 
         if ($cartItem) {
-            $cartItem->quantity += $data['quantity']->save();
+            $cartItem->update(['quantity' => $cartItem->quantity + $data['quantity']]);
         } else {
             $cartItem = $cart->items()->create($data);
         }
@@ -70,50 +128,5 @@ class CartRepository implements CartRepositoryInterface
                 }
             }
         }
-    }
-
-    /**
-     * Add a product to the cart or update its quantity.
-     *
-     * @param Request $request
-     * @return Cart
-     */
-    public function addToCart(Request $request): Cart
-    {
-        $data = $request->only(['product_id', 'quantity']);
-        $services = $request->input('services', []);
-
-        $cart = $this->getOrCreateCart(auth()->id());
-        $cartItem = $this->addOrUpdateCartItem($cart, $data);
-        $this->attachServicesToCartItem($cartItem, $services);
-
-        return $cart;
-    }
-
-    /**
-     * Update the quantity of an item in the cart.
-     *
-     * @param Request $request
-     * @param CartItem $cartItem
-     * @return CartItem
-     */
-    public function updateQuantity(Request $request, CartItem $cartItem): CartItem
-    {
-        $cartItem->update(['quantity' => $request->input('quantity')]);
-
-        return $cartItem;
-    }
-
-    /**
-     * Remove an item from the cart.
-     *
-     * @param CartItem $cartItem
-     * @return void
-     */
-    public function removeItem(CartItem $cartItem): void
-    {
-        $cartItem->services()->detach();
-
-        $cartItem->delete();
     }
 }

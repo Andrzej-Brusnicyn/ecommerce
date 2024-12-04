@@ -89,4 +89,16 @@ class ProductRepository implements ProductRepositoryInterface
 
         return $product->delete();
     }
+
+    /**
+     * Process products in chunks.
+     *
+     * @param int $size
+     * @param callable $callback
+     * @return void
+     */
+    public function chunk(int $size, callable $callback): void
+    {
+        Product::query()->chunk($size, $callback);
+    }
 }

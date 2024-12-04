@@ -16,6 +16,10 @@ use App\Repositories\ServiceRepository;
 use App\Repositories\ServiceRepositoryInterface;
 use App\Repositories\CategoryRepository;
 use App\Repositories\CategoryRepositoryInterface;
+use App\Services\SystemClock;
+use Psr\Clock\ClockInterface;
+use App\Services\CurrencyService;
+use Illuminate\Contracts\Cache\Repository as CacheRepository;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,7 +34,17 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(ServiceRepositoryInterface::class, ServiceRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, CategoryRepository::class);
+        $this->app->singleton(ClockInterface::class, SystemClock::class);
         $this->app->bind(AuthService::class);
+        $this->app->singleton(CurrencyService::class, function ($app) {
+            return new CurrencyService(
+                $app->make(CacheRepository::class),
+                config('constants.currencies'),
+                config('constants.currency.cache_key'),
+                config('constants.currency.cache_ttl'),
+                config('constants.currency.bank_url')
+            );
+        });
     }
 
     /**

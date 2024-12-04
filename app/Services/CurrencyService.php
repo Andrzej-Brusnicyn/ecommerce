@@ -15,14 +15,24 @@ class CurrencyService
     /**
      * CurrencyService constructor.
      *
+     * @param CacheRepository $cache
+     * @param array $currencies
+     * @param string $cacheKey
+     * @param int $cacheTtl
+     * @param string $bankUrl
      */
-    public function __construct(CacheRepository $cache)
-    {
-        $this->currencies = config('constants.currencies');
-        $this->cacheKey = config('constants.currency.cache_key');
-        $this->cacheTtl = config('constants.currency.cache_ttl');
-        $this->bankUrl = config('constants.currency.bank_url');
+    public function __construct(
+        CacheRepository $cache,
+        array $currencies,
+        string $cacheKey,
+        int $cacheTtl,
+        string $bankUrl
+    ) {
         $this->cache = $cache;
+        $this->currencies = $currencies;
+        $this->cacheKey = $cacheKey;
+        $this->cacheTtl = $cacheTtl;
+        $this->bankUrl = $bankUrl;
     }
 
     /**

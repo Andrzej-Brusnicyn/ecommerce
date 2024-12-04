@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\CartItem;
 use App\Repositories\CartRepositoryInterface;
-use App\Services\CartService;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -13,23 +12,19 @@ use App\Services\AuthService;
 class CartController extends Controller
 {
     protected CartRepositoryInterface $cartRepository;
-    protected CartService $cartService;
     protected AuthService $authService;
 
     /**
      * CartController constructor.
      *
      * @param CartRepositoryInterface $cartRepository
-     * @param CartService $cartService
      * @param AuthService $authService
      */
     public function __construct(
         CartRepositoryInterface $cartRepository,
-        CartService $cartService,
         AuthService $authService
     ) {
         $this->cartRepository = $cartRepository;
-        $this->cartService = $cartService;
         $this->authService = $authService;
     }
 
@@ -41,10 +36,12 @@ class CartController extends Controller
     public function index(): View
     {
         $userId = $this->authService->getUserId();
-        $cart = $this->cartRepository->getCartByUserId($userId);
-        $totalAmount = $this->cartService->calculateTotalAmount($cart);
+        $cartData = $this->cartRepository->getCartWithTotal($userId);
 
-        return view('cart', compact('cart', 'totalAmount'));
+        return view('cart', [
+            'cart' => $cartData['cart'],
+            'totalAmount' => $cartData['totalAmount']
+        ]);
     }
 
     /**
@@ -55,7 +52,8 @@ class CartController extends Controller
      */
     public function addToCart(Request $request): RedirectResponse
     {
-        $this->cartRepository->addToCart($request);
+        $userId = $this->authService->getUserId();
+        $this->cartRepository->addToCart($request, $userId);
 
         return redirect()->route('cart.index')
             ->with('message', 'You have successfully added the product and selected services to the cart!');

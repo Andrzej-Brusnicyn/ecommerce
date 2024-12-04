@@ -2,20 +2,14 @@
 
 namespace App\DTO;
 
-enum OrderStatus: string
-{
-    case New = 'new';
-    case InProcess = 'in process';
-    case Shipping = 'shipping';
-    case Delivering = 'delivering';
-    case Cancelled = 'cancelled';
-}
+use App\Enums\OrderStatus;
+use DateTimeImmutable;
 
 readonly class CreateOrderDTO
 {
     public int $userId;
     public float $totalAmount;
-    public string $orderDate;
+    public DateTimeImmutable $orderDate;
     public OrderStatus $status;
 
     /**
@@ -23,13 +17,13 @@ readonly class CreateOrderDTO
      *
      * @param int $userId
      * @param float $totalAmount
-     * @param string $orderDate
+     * @param DateTimeImmutable $orderDate
      * @param OrderStatus $status
      */
     public function __construct(
         int $userId,
         float $totalAmount,
-        string $orderDate,
+        DateTimeImmutable $orderDate,
         OrderStatus $status
     ) {
         $this->userId = $userId;
@@ -41,7 +35,7 @@ readonly class CreateOrderDTO
     /**
      * Convert the DTO to an array.
      *
-     * @return array<string, int|float|string>
+     * @return array<string, int|float|DateTimeImmutable>
      */
     public function toArray(): array
     {

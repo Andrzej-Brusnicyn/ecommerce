@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\OrderService;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use App\Services\AuthService;
+use App\Repositories\OrderRepositoryInterface;
 
 class OrderController extends Controller
 {
-    protected OrderService $orderService;
+    protected OrderRepositoryInterface $orderRepository;
     protected AuthService $authService;
 
     /**
      * OrderController constructor.
      *
-     * @param OrderService $orderService
+     * @param OrderRepositoryInterface $orderRepository
      * @param AuthService $authService
      */
-    public function __construct(OrderService $orderService, AuthService $authService)
+    public function __construct(OrderRepositoryInterface $orderRepository, AuthService $authService)
     {
-        $this->orderService = $orderService;
+        $this->orderRepository = $orderRepository;
         $this->authService = $authService;
     }
 
@@ -35,12 +34,18 @@ class OrderController extends Controller
         $userId = $this->authService->getUserId();
 
         if ($userId === null) {
+
             return redirect()->route('login')->with('message', 'Please log in to create an order.');
         }
 
-        $this->orderService->createOrder((int)$userId);
+        try {
+            $this->orderRepository->createOrder($userId);
 
-        return redirect()->route('products.index');
+            return redirect()->route('products.index');
+        } catch (\Exception $e) {
+
+            return redirect()->route('cart.index')->with('error', $e->getMessage());
+        }
     }
 }
 
