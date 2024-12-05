@@ -8,8 +8,10 @@ use Illuminate\Http\Request;
 
 interface CartRepositoryInterface
 {
-    public function getCartWithTotal(int $userId);
-    public function addToCart(Request $request, int $userId);
-    public function updateQuantity(Request $request, CartItem $cartItem);
+    public function attachServicesToCartItem(CartItem $cartItem, array $serviceIds): void;
+    public function addOrUpdateCartItem(Cart $cart, array $data): CartItem;
+    public function getOrCreateCart(int $userId): Cart;
+    public function getCart(int $userId): ?Cart;
+    public function updateQuantity(CartItem $cartItem, int $quantity);
     public function removeItem(CartItem $cartItem);
 }

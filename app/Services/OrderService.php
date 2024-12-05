@@ -3,18 +3,23 @@
 namespace App\Services;
 
 use App\Models\Cart;
+use App\DTO\CreateOrderDTO;
+use App\Repositories\OrderRepositoryInterface;
 use App\Exceptions\CartEmptyException;
+use App\Enums\OrderStatus;
+use Psr\Clock\ClockInterface;
 
 class OrderService
 {
-    /**
-     * Calculate total amount for the order and validate the cart.
-     *
-     * @param int $userId
-     * @return array
-     * @throws \Exception
-     */
-    public function prepareOrderData(int $userId): array
+    protected OrderRepositoryInterface $orderRepository;
+
+    public function __construct(OrderRepositoryInterface $orderRepository, ClockInterface $clock)
+    {
+        $this->orderRepository = $orderRepository;
+        $this->clock = $clock;
+    }
+
+    public function createOrder(int $userId): void
     {
         $cart = Cart::where('user_id', $userId)
             ->with('items.services', 'items.product')
@@ -31,9 +36,13 @@ class OrderService
             return $itemTotal + $serviceTotal;
         });
 
-        return [
-            'cart' => $cart,
-            'totalAmount' => $totalAmount
-        ];
+        $orderDTO = new CreateOrderDTO(
+            $userId,
+            $totalAmount,
+            $this->clock->now(),
+            OrderStatus::InProcess
+        );
+
+        $this->orderRepository->createOrder($orderDTO, $cart);
     }
 }

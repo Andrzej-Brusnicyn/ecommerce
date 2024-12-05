@@ -6,7 +6,6 @@ use App\Filters\ProductFilter;
 use App\Repositories\CategoryRepositoryInterface;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
-use App\Repositories\ProductRepository;
 use App\Repositories\ProductRepositoryInterface;
 use App\Repositories\ServiceRepositoryInterface;
 use App\Services\PriceConversionService;

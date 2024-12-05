@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Product;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\LazyCollection;
 
 class ProductRepository implements ProductRepositoryInterface

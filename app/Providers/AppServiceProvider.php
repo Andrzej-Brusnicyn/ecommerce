@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Jobs\ExportProductsJob;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\ServiceProvider;
 use App\Repositories\ProductRepository;
 use App\Repositories\ProductRepositoryInterface;
@@ -43,6 +45,14 @@ class AppServiceProvider extends ServiceProvider
                 config('constants.currency.cache_key'),
                 config('constants.currency.cache_ttl'),
                 config('constants.currency.bank_url')
+            );
+
+        });
+        $this->app->singleton(ExportProductsJob::class, function ($app) {
+            return new ExportProductsJob(
+                $app->make(ProductRepositoryInterface::class),
+                $app->make(Filesystem::class),
+                config('constants.storage.s3.products_path')
             );
         });
     }

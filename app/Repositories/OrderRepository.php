@@ -2,64 +2,28 @@
 
 namespace App\Repositories;
 
-use App\Enums\OrderStatus;
 use App\Models\Order;
-use App\Services\OrderService;
-use App\DTO\CreateOrderDTO;
+use App\Models\Cart;
 use App\DTO\CreateOrderItemDTO;
-use Psr\Clock\ClockInterface;
-use App\Exceptions\OrderCreationException;
+use App\DTO\CreateOrderDTO;
 
 class OrderRepository implements OrderRepositoryInterface
 {
-    protected OrderService $orderService;
-
-    /**
-     * OrderRepository constructor.
-     *
-     * @param OrderService $orderService
-     * @param ClockInterface $clock
-     */
-    public function __construct(OrderService $orderService, ClockInterface $clock)
+    public function createOrder(CreateOrderDTO $orderDTO, Cart $cart): Order
     {
-        $this->orderService = $orderService;
-        $this->clock = $clock;
-    }
+        $order = Order::create($orderDTO->toArray());
 
-    /**
-     * Create a new order.
-     *
-     * @param int $userId
-     * @throws \Exception
-     */
-    public function createOrder(int $userId): void
-    {
-        try {
-            $data = $this->orderService->prepareOrderData($userId);
-            $cart = $data['cart'];
-            $totalAmount = $data['totalAmount'];
+        foreach ($cart->items as $cartItem) {
+            $orderItemDTO = new CreateOrderItemDTO($cartItem);
+            $orderItem = $order->items()->create($orderItemDTO->toArray());
 
-            $orderDTO = new CreateOrderDTO(
-                $userId,
-                $totalAmount,
-                $this->clock->now(),
-                OrderStatus::InProcess
-            );
-
-            $order = Order::create($orderDTO->toArray());
-
-            foreach ($cart->items as $cartItem) {
-                $orderItemDTO = new CreateOrderItemDTO($cartItem);
-                $orderItem = $order->items()->create($orderItemDTO->toArray());
-
-                foreach ($orderItemDTO->services as $service) {
-                    $orderItem->services()->attach($service->id, ['price' => $service->price]);
-                }
+            foreach ($orderItemDTO->services as $service) {
+                $orderItem->services()->attach($service->id, ['price' => $service->price]);
             }
-
-            $cart->items()->delete();
-        } catch (\Exception $e) {
-            throw new OrderCreationException('Error creating order: ' . $e->getMessage());
         }
+
+        $cart->items()->delete();
+
+        return $order;
     }
 }
